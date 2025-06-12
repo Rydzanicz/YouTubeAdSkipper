@@ -1,16 +1,19 @@
 //const indicator = document.createElement('div');
 //indicator.textContent = '🚀 Ad Skipper działa';
-//indicator.style.position = 'fixed';
-//indicator.style.top = '0';
-//indicator.style.left = '0';
-//indicator.style.width = '100%';
-//indicator.style.backgroundColor = '#27ae60';
-//indicator.style.color = 'white';
-//indicator.style.fontSize = '14px';
-//indicator.style.fontWeight = 'bold';
-//indicator.style.textAlign = 'center';
-//indicator.style.zIndex = '9999';
-//indicator.style.padding = '4px 0';
+//Object.assign(indicator.style, {
+//  position: 'fixed',
+//  top: '0',
+//  left: '0',
+//  width: '100%',
+//  backgroundColor: '#27ae60',
+//  color: 'white',
+//  fontSize: '14px',
+//  fontWeight: 'bold',
+//  textAlign: 'center',
+//  zIndex: '9999',
+//  padding: '4px 0',
+//  fontFamily: 'Arial, sans-serif'
+//});
 //document.body.appendChild(indicator);
 
 function trySkipAd() {
@@ -29,9 +32,11 @@ function trySkipAd() {
   const adContainer = document.querySelector('.ad-showing');
   if (adContainer) {
     const video = document.querySelector('video');
-    if (video) {
+    if (video && isFinite(video.duration) && video.duration > 0) {
       video.currentTime = video.duration;
       console.log('⏩ Reklama przewinięta');
+    } else {
+      console.log('⚠️ Reklama się jeszcze nie załadowała (duration = NaN lub 0)');
     }
   }
 }
@@ -42,9 +47,9 @@ const observer = new MutationObserver(() => {
 
 observer.observe(document.body, {
   childList: true,
-  subtree: true,
+  subtree: true
 });
 
-setInterval(trySkipAd, 1500);
+setInterval(trySkipAd, 1000);
 
 console.log('🔧 Skrypt Ad Skipper aktywny');
