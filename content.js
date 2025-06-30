@@ -1,55 +1,62 @@
-//const indicator = document.createElement('div');
-//indicator.textContent = '🚀 Ad Skipper działa';
-//Object.assign(indicator.style, {
-//  position: 'fixed',
-//  top: '0',
-//  left: '0',
-//  width: '100%',
-//  backgroundColor: '#27ae60',
-//  color: 'white',
-//  fontSize: '14px',
-//  fontWeight: 'bold',
-//  textAlign: 'center',
-//  zIndex: '9999',
-//  padding: '4px 0',
-//  fontFamily: 'Arial, sans-serif'
-//});
-//document.body.appendChild(indicator);
+// ==UserScript==
+// @name         YouTube Ad Skipper PL
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Automatyczne pomijanie i zamykanie reklam YouTube
+// @match        https://www.youtube.com/*
+// @grant        none
+// ==/UserScript==
 
-function trySkipAd() {
-  const skipButtons = document.querySelectorAll(
-    '.ytp-ad-skip-button, .ytp-skip-ad-button, button[aria-label="Pomiń reklamę"], .ytp-ad-overlay-close-button'
-  );
+(function () {
+    'use strict';
 
-  for (const button of skipButtons) {
-    if (button.offsetParent !== null) {
-      button.click();
-      console.log('✅ Kliknięto przycisk pomiń');
-      return;
+    function closeOverlay() {
+        const overlayClose = document.querySelector(
+            '.ytp-ad-overlay-close-button'
+        );
+        if (overlayClose && overlayClose.offsetParent !== null) {
+            overlayClose.click();
+            console.log('✅ Zamknięto overlay reklamy');
+        }
     }
-  }
 
-  const adContainer = document.querySelector('.ad-showing');
-  if (adContainer) {
-    const video = document.querySelector('video');
-    if (video && isFinite(video.duration) && video.duration > 0) {
-      video.currentTime = video.duration;
-      console.log('⏩ Reklama przewinięta');
-    } else {
-      console.log('⚠️ Reklama się jeszcze nie załadowała (duration = NaN lub 0)');
+    function clickSkipButton() {
+        const selectors = [
+            '.ytp-ad-skip-button',
+            '.ytp-ad-skip-button-modern',
+            'button[aria-label*="Pomiń reklamę"]',
+            'button[aria-label*="Skip Ad"]'
+        ];
+        for (const sel of selectors) {
+            const btn = document.querySelector(sel);
+            if (btn && btn.offsetParent !== null) {
+                btn.click();
+                console.log('✅ Kliknięto przycisk Pomiń reklamę');
+                return true;
+            }
+        }
+        return false;
     }
-  }
-}
 
-const observer = new MutationObserver(() => {
-  trySkipAd();
-});
+    function endAdPlayback() {
+        const adPlayer = document.querySelector('.html5-video-player.ad-showing');
+        const video = document.querySelector('video');
+        if (adPlayer && video && isFinite(video.duration) && video.duration > 0) {
+            video.currentTime = video.duration;
+            console.log('⏩ Przewinięto reklamę do końca');
+        }
+    }
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
+    function trySkipAd() {
+        closeOverlay();
+        if (clickSkipButton()) return;
+        endAdPlayback();
+    }
 
-setInterval(trySkipAd, 1000);
+    const observer = new MutationObserver(trySkipAd);
+    observer.observe(document.body, {childList: true, subtree: true});
 
-console.log('🔧 Skrypt Ad Skipper aktywny');
+    setInterval(trySkipAd, 1000);
+
+    console.log('🔧 Skrypt Ad Skipper PL aktywny');
+})();
